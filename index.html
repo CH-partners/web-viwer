@@ -1,6 +1,4 @@
-from pathlib import Path
-
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -1156,8 +1154,3 @@ renderAllContents();
 </script>
 </body>
 </html>
-'''
-
-out = Path('/mnt/data/문구통합_B안_전체상세수정_firebase.html')
-out.write_text(html, encoding='utf-8')
-print(out)
