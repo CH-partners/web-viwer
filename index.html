@@ -1030,6 +1030,10 @@ function showSheet(index, title = "") {
 }
 window.showSheet = showSheet;
 
+function getDynamicPanelKey(menu) {
+  return `panel_${Number(menu.panelIndex)}`;
+}
+
 function ensureWorkMenu() {
   const fixedWorkMenu = {
     title: "작업배분표",
@@ -1157,6 +1161,72 @@ function renderNotice() {
   document.getElementById("noticeItems").innerHTML = noticeData.html || "<li>공지 내용이 없습니다.</li>";
 }
 
+function ensureDynamicPanels() {
+  const main = document.querySelector(".main");
+  if (!main) return;
+
+  const fixedPanelIndexes = new Set([0,1,2,3,4,5,6,7,8,9,10,11]);
+
+  menuData.forEach(menu => {
+    const panelIndex = Number(menu.panelIndex);
+    if (fixedPanelIndexes.has(panelIndex)) return;
+    if (menu.kind === "iframe") return;
+
+    let panel = document.querySelector(`.sheet-panel[data-index="${panelIndex}"]`);
+
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.className = "sheet-panel";
+      panel.setAttribute("data-index", String(panelIndex));
+
+      panel.innerHTML = `
+        <header class="sheet-header">
+          <h1>${escapeHtml(menu.title || "메뉴")}</h1>
+          <div class="sheet-tools">
+            <button class="action-btn hidden panel-edit-btn dynamic-panel-edit-btn"
+              data-dynamic-key="${getDynamicPanelKey(menu)}">내용 수정</button>
+          </div>
+        </header>
+        <section class="major-card"></section>
+      `;
+
+      main.appendChild(panel);
+    } else {
+      const h1 = panel.querySelector("h1");
+      if (h1) h1.textContent = menu.title || "메뉴";
+
+      let editBtn = panel.querySelector(".dynamic-panel-edit-btn");
+      if (!editBtn) {
+        const tools = panel.querySelector(".sheet-tools");
+        if (tools) {
+          editBtn = document.createElement("button");
+          editBtn.className = "action-btn hidden panel-edit-btn dynamic-panel-edit-btn";
+          editBtn.textContent = "내용 수정";
+          tools.appendChild(editBtn);
+        }
+      }
+      if (editBtn) {
+        editBtn.setAttribute("data-dynamic-key", getDynamicPanelKey(menu));
+      }
+    }
+
+    const panelKey = getDynamicPanelKey(menu);
+    if (!pageContents[panelKey]) {
+      pageContents[panelKey] = {
+        majorTitle: menu.title || "메뉴",
+        html: `<p class="body-line">내용을 입력하세요.</p>`
+      };
+    }
+  });
+
+  document.querySelectorAll(".dynamic-panel-edit-btn").forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.getAttribute("data-dynamic-key");
+      window.openContentEditor(key);
+    };
+  });
+}
+
 function renderAllContents() {
   const renderMap = {
     rent: "content-rent",
@@ -1174,9 +1244,43 @@ function renderAllContents() {
     const el = document.getElementById(targetId);
     const config = pageContents[key];
     if (!el || !config) return;
-    el.innerHTML = `<div class="major-title">${escapeHtml(config.majorTitle || "")}</div><div class="rich-preview">${config.html || ""}</div>`;
+    el.innerHTML = `
+      <div class="major-title">${escapeHtml(config.majorTitle || "")}</div>
+      <div class="rich-preview">${config.html || ""}</div>
+    `;
   });
 
+  ensureDynamicPanels();
+
+  const fixedPanelIndexes = new Set([0,1,2,3,4,5,6,7,8,9,10,11]);
+
+  menuData.forEach(menu => {
+    const panelIndex = Number(menu.panelIndex);
+    if (fixedPanelIndexes.has(panelIndex)) return;
+    if (menu.kind === "iframe") return;
+
+    const panel = document.querySelector(`.sheet-panel[data-index="${panelIndex}"]`);
+    if (!panel) return;
+
+    const section = panel.querySelector("section.major-card");
+    if (!section) return;
+
+    const panelKey = getDynamicPanelKey(menu);
+    const config = pageContents[panelKey] || {
+      majorTitle: menu.title || "메뉴",
+      html: `<p class="body-line">내용을 입력하세요.</p>`
+    };
+
+    section.innerHTML = `
+      <div class="major-title">${escapeHtml(config.majorTitle || "")}</div>
+      <div class="rich-preview">${config.html || ""}</div>
+    `;
+
+    const h1 = panel.querySelector("h1");
+    if (h1) h1.textContent = menu.title || "메뉴";
+  });
+
+  updateAdminUI();
   renderAllocationUI();
 }
 
@@ -1368,12 +1472,29 @@ function getPanelTitleByKey(panelKey) {
     browseqa: "열람자료Q&A",
     machineqa: "기계기구Q&A"
   };
-  return map[panelKey] || "내용";
+
+  if (map[panelKey]) return map[panelKey];
+
+  if (panelKey.startsWith("panel_")) {
+    const idx = Number(panelKey.replace("panel_", ""));
+    const found = menuData.find(menu => Number(menu.panelIndex) === idx);
+    if (found?.title) return found.title;
+  }
+
+  return "내용";
 }
 
 window.openContentEditor = function(panelKey) {
   if (!isAdmin(currentUser)) return alert("관리자만 수정할 수 있습니다.");
   currentContentPanelKey = panelKey;
+
+  if (!pageContents[panelKey]) {
+    pageContents[panelKey] = {
+      majorTitle: getPanelTitleByKey(panelKey),
+      html: `<p class="body-line">내용을 입력하세요.</p>`
+    };
+  }
+
   const config = pageContents[panelKey];
   document.getElementById("contentModalTitle").textContent = `${getPanelTitleByKey(panelKey)} 내용 수정`;
   document.getElementById("contentMajorTitle").value = config.majorTitle || "";
