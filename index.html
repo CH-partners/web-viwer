@@ -1132,9 +1132,13 @@ async function ensureInitialData() {
   }
 }
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   currentUser = user;
   updateAdminUI();
+
+  if (isAdmin(user)) {
+    await ensureInitialData();
+  }
 });
 
 onSnapshot(settingsRef, snap => {
@@ -1147,7 +1151,6 @@ onSnapshot(settingsRef, snap => {
   renderAllContents();
 });
 
-await ensureInitialData();
 renderMenus();
 renderNotice();
 renderAllContents();
