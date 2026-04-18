@@ -100,6 +100,58 @@ body {
   color:#ffffff;
 }
 
+.admin-box {
+  margin-top:14px;
+  border-top:1px solid #e5e7eb;
+  padding-top:14px;
+}
+.admin-box-top {
+  margin-top:0;
+  margin-bottom:14px;
+  padding-top:0;
+  border-top:0;
+  border-bottom:1px solid #e5e7eb;
+  padding-bottom:14px;
+  position:sticky;
+  top:0;
+  background:#fff;
+  z-index:5;
+}
+.admin-status {
+  font-size:12px;
+  color:#64748b;
+  margin:0 0 10px;
+}
+.admin-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.admin-btn {
+  border:1px solid #cbd5e1;
+  background:#fff;
+  color:#334155;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.admin-btn:hover {
+  background:#eff6ff;
+  color:#1d4ed8;
+  border-color:#bfdbfe;
+}
+.admin-btn.primary {
+  background:#1d4ed8;
+  color:#fff;
+  border-color:#1d4ed8;
+}
+.admin-btn.primary:hover {
+  background:#1e40af;
+  color:#fff;
+}
+
 /* main */
 .main {
   padding:34px 36px 48px;
@@ -232,6 +284,9 @@ body {
   color:#1d4ed8;
   border-color:#bfdbfe;
 }
+.hidden {
+  display:none !important;
+}
 
 /* iframe */
 .iframe-card {
@@ -267,6 +322,9 @@ body {
   border-radius:20px;
   padding:22px;
   box-shadow:0 20px 60px rgba(15,23,42,0.25);
+}
+.modal.large {
+  width:min(900px, 100%);
 }
 .modal-title {
   font-size:22px;
@@ -328,6 +386,49 @@ body {
   font-weight:700;
 }
 
+.menu-table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+}
+.menu-table th,
+.menu-table td {
+  border:1px solid #e2e8f0;
+  padding:10px;
+  vertical-align:middle;
+}
+.menu-table th {
+  background:#f8fafc;
+  text-align:left;
+  font-size:13px;
+}
+.menu-table input {
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:9px 10px;
+  font-size:13px;
+}
+.menu-row-actions {
+  display:flex;
+  gap:6px;
+}
+.small-btn {
+  border:1px solid #cbd5e1;
+  background:#fff;
+  color:#334155;
+  padding:7px 10px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+}
+.small-btn.danger {
+  color:#b91c1c;
+  border-color:#fecaca;
+  background:#fff5f5;
+}
+
 /* responsive */
 @media (max-width: 920px) {
   .app { grid-template-columns:1fr; }
@@ -364,27 +465,22 @@ body {
     </div>
     <div class="logo-sub">문구통합 문서 뷰어</div>
 
-    <div class="nav">
-      <button class="nav-item active" onclick="showSheet(0)">청현 공지사항</button>
-      <button class="nav-item" onclick="showSheet(1)">임대차</button>
-      <button class="nav-item" onclick="showSheet(2)">임금</button>
-      <button class="nav-item" onclick="showSheet(3)">조세</button>
-      <button class="nav-item" onclick="showSheet(4)">선순위임차인Q&amp;A</button>
-      <button class="nav-item" onclick="showSheet(5)">보증서Q&amp;A</button>
-      <button class="nav-item" onclick="showSheet(6)">피담보채무Q&amp;A</button>
-      <button class="nav-item" onclick="showSheet(7)">매각대상여부Q&amp;A</button>
-      <button class="nav-item" onclick="showSheet(8)">열람자료Q&amp;A</button>
-      <button class="nav-item" onclick="showSheet(9)">기계기구Q&amp;A</button>
+    <div class="admin-box admin-box-top">
+      <p class="admin-status" id="adminStatus">관리자 로그인 전</p>
+      <div class="admin-actions">
+        <button class="admin-btn primary" id="loginBtn" onclick="openLoginModal()">관리자 로그인</button>
+        <button class="admin-btn hidden" id="logoutBtn" onclick="logoutAdmin()">로그아웃</button>
+        <button class="admin-btn hidden" id="menuEditBtn" onclick="openMenuEditor()">메뉴 수정</button>
+      </div>
     </div>
 
-    <div class="nav-bottom">
-      <button class="nav-item nav-item-green" onclick="showSheet(10)">주택·상가 소액 조회</button>
-    </div>
+    <div class="nav" id="topNav"></div>
+
+    <div class="nav-bottom" id="bottomNav"></div>
   </aside>
 
   <main class="main">
 
-    <!-- 0. 청현 공지사항 -->
     <div class="sheet-panel active" data-index="0">
       <header class="sheet-header">
         <h1>청현 공지사항</h1>
@@ -397,20 +493,19 @@ body {
           <div class="notice-head">
             <div class="badge blue" style="margin-bottom:0;">공지</div>
             <div class="notice-actions">
-              <button class="action-btn" onclick="openNoticeEditor()">수정</button>
+              <button class="action-btn" id="noticeEditBtn" onclick="openNoticeEditor()">공지 수정</button>
             </div>
           </div>
 
           <p class="lead-line" id="noticeTitle">공지 불러오는 중...</p>
           <div class="note" id="noticeDate">기준일: -</div>
           <ul class="clean-list" id="noticeItems">
-            <li>notice.json을 불러오는 중입니다.</li>
+            <li>공지 데이터를 불러오는 중입니다.</li>
           </ul>
         </div>
       </section>
     </div>
 
-    <!-- 1. 임대차 -->
     <div class="sheet-panel" data-index="1">
       <header class="sheet-header"><h1>임대차</h1></header>
       <section class="major-card">
@@ -446,7 +541,6 @@ body {
       </section>
     </div>
 
-    <!-- 2. 임금 -->
     <div class="sheet-panel" data-index="2">
       <header class="sheet-header"><h1>임금</h1></header>
       <section class="major-card">
@@ -459,7 +553,6 @@ body {
       </section>
     </div>
 
-    <!-- 3. 조세 -->
     <div class="sheet-panel" data-index="3">
       <header class="sheet-header"><h1>조세</h1></header>
       <section class="major-card">
@@ -469,7 +562,6 @@ body {
       </section>
     </div>
 
-    <!-- 4. 선순위임차인Q&A -->
     <div class="sheet-panel" data-index="4">
       <header class="sheet-header"><h1>선순위임차인Q&amp;A</h1></header>
       <section class="major-card">
@@ -479,7 +571,6 @@ body {
       </section>
     </div>
 
-    <!-- 5. 보증서Q&A -->
     <div class="sheet-panel" data-index="5">
       <header class="sheet-header"><h1>보증서Q&amp;A</h1></header>
       <section class="major-card">
@@ -488,7 +579,6 @@ body {
       </section>
     </div>
 
-    <!-- 6. 피담보채무Q&A -->
     <div class="sheet-panel" data-index="6">
       <header class="sheet-header"><h1>피담보채무Q&amp;A</h1></header>
       <section class="major-card">
@@ -499,7 +589,6 @@ body {
       </section>
     </div>
 
-    <!-- 7. 매각대상여부Q&A -->
     <div class="sheet-panel" data-index="7">
       <header class="sheet-header"><h1>매각대상여부Q&amp;A</h1></header>
       <section class="major-card">
@@ -508,7 +597,6 @@ body {
       </section>
     </div>
 
-    <!-- 8. 열람자료Q&A -->
     <div class="sheet-panel" data-index="8">
       <header class="sheet-header"><h1>열람자료Q&amp;A</h1></header>
       <section class="major-card">
@@ -517,7 +605,6 @@ body {
       </section>
     </div>
 
-    <!-- 9. 기계기구Q&A -->
     <div class="sheet-panel" data-index="9">
       <header class="sheet-header"><h1>기계기구Q&amp;A</h1></header>
       <section class="major-card">
@@ -526,7 +613,6 @@ body {
       </section>
     </div>
 
-    <!-- 10. 주택·상가 소액 조회 -->
     <div class="sheet-panel" data-index="10">
       <header class="sheet-header">
         <h1>주택·상가 소액 조회</h1>
@@ -543,7 +629,6 @@ body {
   </main>
 </div>
 
-<!-- notice edit modal -->
 <div class="modal-backdrop" id="noticeModal">
   <div class="modal">
     <div class="modal-title">공지 수정</div>
@@ -566,123 +651,411 @@ body {
 
     <div class="modal-actions">
       <button class="secondary-btn" onclick="closeNoticeEditor()">닫기</button>
-      <button class="primary-btn" onclick="saveAndDownloadNotice()">저장 후 다운로드</button>
+      <button class="primary-btn" onclick="saveNoticeToFirebase()">저장</button>
     </div>
   </div>
 </div>
 
-<script>
-let noticeData = {
-  title: "",
-  date: "",
-  items: []
+<div class="modal-backdrop" id="menuModal">
+  <div class="modal large">
+    <div class="modal-title">메뉴 수정</div>
+
+    <div class="help-text" style="margin-bottom:12px;">
+      top 은 상단 메뉴, bottom 은 하단 초록 메뉴입니다. iframe 메뉴는 URL을 넣으면 됩니다.
+    </div>
+
+    <table class="menu-table">
+      <thead>
+        <tr>
+          <th style="width:90px;">위치</th>
+          <th>제목</th>
+          <th style="width:120px;">패널 번호</th>
+          <th>iframe URL</th>
+          <th style="width:120px;">삭제</th>
+        </tr>
+      </thead>
+      <tbody id="menuTableBody"></tbody>
+    </table>
+
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <button class="small-btn" onclick="addMenuRow('top')">상단 메뉴 추가</button>
+      <button class="small-btn" onclick="addMenuRow('bottom')">하단 메뉴 추가</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeMenuEditor()">닫기</button>
+      <button class="primary-btn" onclick="saveMenusToFirebase()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal">
+    <div class="modal-title">관리자 로그인</div>
+
+    <div class="form-row">
+      <label for="loginEmail">이메일</label>
+      <input id="loginEmail" type="email" placeholder="admin@example.com">
+    </div>
+
+    <div class="form-row">
+      <label for="loginPassword">비밀번호</label>
+      <input id="loginPassword" type="password" placeholder="비밀번호 입력">
+    </div>
+
+    <div class="help-text">
+      Firebase Authentication 의 Email/Password 계정만 로그인 가능합니다.
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeLoginModal()">닫기</button>
+      <button class="primary-btn" onclick="loginAdmin()">로그인</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* 여기에 Firebase 설정값 넣기 */
+const firebaseConfig = {
+  apiKey: "AIzaSyDr_SfWtjfRPqfguJ6yvwBo-e3r8bGAs_M",
+  authDomain: "ch-partners-71452.firebaseapp.com",
+  projectId: "ch-partners-71452",
+  storageBucket: "ch-partners-71452.firebasestorage.app",
+  messagingSenderId: "837806797750",
+  appId: "1:837806797750:web:133c57b81342bdba8b8717",
+  measurementId: "G-DFL4DRH7L6"
 };
 
-function showSheet(index) {
-  document.querySelectorAll('.sheet-panel').forEach(function(el) {
-    el.classList.remove('active');
+/* 수정 가능한 관리자 이메일 */
+const ADMIN_EMAILS = [
+  "admin1@admin.com",
+  "eastspring1979@gmail.com"
+].map(v => v.toLowerCase());
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+
+const defaultMenus = [
+  { title: "청현 공지사항", panelIndex: 0, location: "top", kind: "panel" },
+  { title: "임대차", panelIndex: 1, location: "top", kind: "panel" },
+  { title: "임금", panelIndex: 2, location: "top", kind: "panel" },
+  { title: "조세", panelIndex: 3, location: "top", kind: "panel" },
+  { title: "선순위임차인Q&A", panelIndex: 4, location: "top", kind: "panel" },
+  { title: "보증서Q&A", panelIndex: 5, location: "top", kind: "panel" },
+  { title: "피담보채무Q&A", panelIndex: 6, location: "top", kind: "panel" },
+  { title: "매각대상여부Q&A", panelIndex: 7, location: "top", kind: "panel" },
+  { title: "열람자료Q&A", panelIndex: 8, location: "top", kind: "panel" },
+  { title: "기계기구Q&A", panelIndex: 9, location: "top", kind: "panel" },
+  { title: "주택·상가 소액 조회", panelIndex: 10, location: "bottom", kind: "iframe", url: "주택상가 소액.html" }
+];
+
+let menuData = [...defaultMenus];
+let noticeData = {
+  title: "공지 제목",
+  date: "",
+  items: ["공지 내용이 없습니다."]
+};
+
+const settingsRef = doc(db, "sharedPages", "mainSettings");
+
+function isAdmin(user) {
+  return !!(user && ADMIN_EMAILS.includes((user.email || "").toLowerCase()));
+}
+
+function updateAdminUI() {
+  const admin = isAdmin(currentUser);
+  document.getElementById("adminStatus").textContent = admin
+    ? `관리자 로그인됨: ${currentUser.email}`
+    : "관리자 로그인 전";
+
+  document.getElementById("loginBtn").classList.toggle("hidden", admin);
+  document.getElementById("logoutBtn").classList.toggle("hidden", !admin);
+  document.getElementById("menuEditBtn").classList.toggle("hidden", !admin);
+  document.getElementById("noticeEditBtn").classList.toggle("hidden", !admin);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function renderMenus() {
+  const topNav = document.getElementById("topNav");
+  const bottomNav = document.getElementById("bottomNav");
+  topNav.innerHTML = "";
+  bottomNav.innerHTML = "";
+
+  menuData.forEach((menu) => {
+    const btn = document.createElement("button");
+    btn.className = "nav-item";
+    if (menu.location === "bottom") {
+      btn.classList.add("nav-item-green");
+    }
+    btn.textContent = menu.title || "메뉴";
+
+    btn.addEventListener("click", () => {
+      if (menu.kind === "iframe" && menu.url) {
+        const frame = document.querySelector('.sheet-panel[data-index="10"] iframe');
+        if (frame) frame.src = menu.url;
+      }
+      showSheet(Number(menu.panelIndex || 0), menu.title);
+    });
+
+    if (menu.location === "bottom") {
+      bottomNav.appendChild(btn);
+    } else {
+      topNav.appendChild(btn);
+    }
   });
 
-  document.querySelectorAll('.nav-item').forEach(function(el) {
-    el.classList.remove('active');
-  });
-
-  var panel = document.querySelector('.sheet-panel[data-index="' + index + '"]');
-  var nav = document.querySelectorAll('.nav-item')[index];
-
-  if (panel) panel.classList.add('active');
-  if (nav) nav.classList.add('active');
+  showSheet(0, menuData.find(m => Number(m.panelIndex) === 0)?.title || "");
 }
 
 function renderNotice() {
-  document.getElementById('noticeTitle').textContent = noticeData.title || '공지 제목';
-  document.getElementById('noticeDate').textContent = '기준일: ' + (noticeData.date || '-');
+  document.getElementById("noticeTitle").textContent = noticeData.title || "공지 제목";
+  document.getElementById("noticeDate").textContent = "기준일: " + (noticeData.date || "-");
 
-  const list = document.getElementById('noticeItems');
-  list.innerHTML = '';
+  const list = document.getElementById("noticeItems");
+  list.innerHTML = "";
 
-  (noticeData.items || []).forEach(function(item) {
-    const li = document.createElement('li');
+  (noticeData.items || []).forEach(item => {
+    const li = document.createElement("li");
     li.textContent = item;
     list.appendChild(li);
   });
 
   if (!noticeData.items || noticeData.items.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = '공지 내용이 없습니다.';
+    const li = document.createElement("li");
+    li.textContent = "공지 내용이 없습니다.";
     list.appendChild(li);
   }
 }
 
-async function loadNoticeJson() {
+window.showSheet = function(index, title = "") {
+  document.querySelectorAll(".sheet-panel").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+
+  const panel = document.querySelector('.sheet-panel[data-index="' + index + '"]');
+  if (panel) panel.classList.add("active");
+
+  const matchedButton = Array.from(document.querySelectorAll(".nav-item"))
+    .find(btn => btn.textContent.trim() === title);
+
+  if (matchedButton) {
+    matchedButton.classList.add("active");
+  }
+};
+
+function openModal(id) {
+  document.getElementById(id).classList.add("show");
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove("show");
+}
+
+window.openLoginModal = () => openModal("loginModal");
+window.closeLoginModal = () => closeModal("loginModal");
+
+window.openNoticeEditor = function() {
+  if (!isAdmin(currentUser)) {
+    alert("관리자만 수정할 수 있습니다.");
+    return;
+  }
+  document.getElementById("noticeFormTitle").value = noticeData.title || "";
+  document.getElementById("noticeFormDate").value = noticeData.date || "";
+  document.getElementById("noticeFormItems").value = (noticeData.items || []).join("\n");
+  openModal("noticeModal");
+};
+
+window.closeNoticeEditor = function() {
+  closeModal("noticeModal");
+};
+
+window.openMenuEditor = function() {
+  if (!isAdmin(currentUser)) {
+    alert("관리자만 수정할 수 있습니다.");
+    return;
+  }
+  renderMenuTable();
+  openModal("menuModal");
+};
+
+window.closeMenuEditor = function() {
+  closeModal("menuModal");
+};
+
+function renderMenuTable() {
+  const tbody = document.getElementById("menuTableBody");
+  tbody.innerHTML = "";
+
+  menuData.forEach((menu, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <input data-field="location" data-index="${index}" value="${escapeHtml(menu.location || "top")}" placeholder="top/bottom">
+      </td>
+      <td>
+        <input data-field="title" data-index="${index}" value="${escapeHtml(menu.title || "")}" placeholder="메뉴 제목">
+      </td>
+      <td>
+        <input data-field="panelIndex" data-index="${index}" value="${escapeHtml(menu.panelIndex ?? "")}" placeholder="0~10">
+      </td>
+      <td>
+        <input data-field="url" data-index="${index}" value="${escapeHtml(menu.url || "")}" placeholder="iframe일 때만 입력">
+      </td>
+      <td>
+        <div class="menu-row-actions">
+          <button class="small-btn danger" onclick="removeMenuRow(${index})">삭제</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.addMenuRow = function(location) {
+  menuData.push({
+    title: "",
+    panelIndex: 0,
+    location: location || "top",
+    kind: location === "bottom" ? "iframe" : "panel",
+    url: ""
+  });
+  renderMenuTable();
+};
+
+window.removeMenuRow = function(index) {
+  menuData.splice(index, 1);
+  renderMenuTable();
+};
+
+function syncMenuDataFromTable() {
+  const rows = Array.from(document.querySelectorAll("#menuTableBody tr"));
+  menuData = rows.map((row, index) => {
+    const getVal = (field) => row.querySelector(`[data-field="${field}"][data-index="${index}"]`)?.value?.trim() || "";
+    const location = getVal("location") || "top";
+    const url = getVal("url");
+    return {
+      title: getVal("title") || `메뉴 ${index + 1}`,
+      panelIndex: Number(getVal("panelIndex") || 0),
+      location,
+      kind: url ? "iframe" : (location === "bottom" ? "iframe" : "panel"),
+      url
+    };
+  });
+}
+
+window.saveMenusToFirebase = async function() {
+  if (!isAdmin(currentUser)) {
+    alert("관리자만 저장할 수 있습니다.");
+    return;
+  }
+  syncMenuDataFromTable();
+  await setDoc(settingsRef, { menus: menuData, notice: noticeData }, { merge: true });
+  renderMenus();
+  closeMenuEditor();
+  alert("메뉴가 저장되었습니다.");
+};
+
+window.saveNoticeToFirebase = async function() {
+  if (!isAdmin(currentUser)) {
+    alert("관리자만 저장할 수 있습니다.");
+    return;
+  }
+
+  const title = document.getElementById("noticeFormTitle").value.trim();
+  const date = document.getElementById("noticeFormDate").value;
+  const itemsRaw = document.getElementById("noticeFormItems").value;
+
+  noticeData = {
+    title: title || "공지 제목",
+    date: date || "",
+    items: itemsRaw.split("\n").map(v => v.trim()).filter(Boolean)
+  };
+
+  await setDoc(settingsRef, { notice: noticeData, menus: menuData }, { merge: true });
+  renderNotice();
+  closeNoticeEditor();
+  alert("공지사항이 저장되었습니다.");
+};
+
+window.loginAdmin = async function() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
   try {
-    const response = await fetch('notice.json', { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error('notice.json 로드 실패');
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    if (!isAdmin(cred.user)) {
+      await signOut(auth);
+      alert("등록된 관리자 계정이 아닙니다.");
+      return;
     }
+    closeLoginModal();
+    document.getElementById("loginPassword").value = "";
+  } catch (e) {
+    alert("로그인 실패: " + (e.message || e));
+  }
+};
 
-    const data = await response.json();
+window.logoutAdmin = async function() {
+  await signOut(auth);
+};
 
-    noticeData.title = data.title || '';
-    noticeData.date = data.date || '';
-    noticeData.items = Array.isArray(data.items) ? data.items : [];
-
-    renderNotice();
-  } catch (error) {
-    console.error(error);
-    noticeData.title = '공지 불러오기 실패';
-    noticeData.date = '';
-    noticeData.items = ['notice.json 파일을 확인하세요.'];
-    renderNotice();
+async function ensureInitialData() {
+  const snap = await getDoc(settingsRef);
+  if (!snap.exists()) {
+    await setDoc(settingsRef, {
+      menus: defaultMenus,
+      notice: {
+        title: "공지 제목",
+        date: "",
+        items: ["공지 내용이 없습니다."]
+      }
+    });
   }
 }
 
-function openNoticeEditor() {
-  document.getElementById('noticeFormTitle').value = noticeData.title || '';
-  document.getElementById('noticeFormDate').value = noticeData.date || '';
-  document.getElementById('noticeFormItems').value = (noticeData.items || []).join('\n');
-  document.getElementById('noticeModal').classList.add('show');
-}
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  updateAdminUI();
+});
 
-function closeNoticeEditor() {
-  document.getElementById('noticeModal').classList.remove('show');
-}
-
-function saveNoticeEditor() {
-  const title = document.getElementById('noticeFormTitle').value.trim();
-  const date = document.getElementById('noticeFormDate').value;
-  const itemsRaw = document.getElementById('noticeFormItems').value;
-
-  noticeData.title = title || '공지 제목';
-  noticeData.date = date || '';
-  noticeData.items = itemsRaw
-    .split('\n')
-    .map(function(v) { return v.trim(); })
-    .filter(function(v) { return !!v; });
-
+onSnapshot(settingsRef, snap => {
+  const data = snap.data() || {};
+  menuData = Array.isArray(data.menus) && data.menus.length ? data.menus : [...defaultMenus];
+  noticeData = data.notice || {
+    title: "공지 제목",
+    date: "",
+    items: ["공지 내용이 없습니다."]
+  };
+  renderMenus();
   renderNotice();
-}
+});
 
-function downloadNoticeJson() {
-  const blob = new Blob([JSON.stringify(noticeData, null, 2)], {
-    type: 'application/json'
-  });
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'notice.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function saveAndDownloadNotice() {
-  saveNoticeEditor();
-  downloadNoticeJson();
-  closeNoticeEditor();
-}
-
-loadNoticeJson();
+await ensureInitialData();
+renderMenus();
+renderNotice();
 </script>
 </body>
 </html>
