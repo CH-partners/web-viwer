@@ -398,7 +398,6 @@ body {
             <div class="badge blue" style="margin-bottom:0;">공지</div>
             <div class="notice-actions">
               <button class="action-btn" onclick="openNoticeEditor()">수정</button>
-              <button class="action-btn" onclick="downloadNoticeJson()">json다운로드</button>
             </div>
           </div>
 
@@ -567,7 +566,7 @@ body {
 
     <div class="modal-actions">
       <button class="secondary-btn" onclick="closeNoticeEditor()">닫기</button>
-      <button class="primary-btn" onclick="saveNoticeEditor()">저장</button>
+      <button class="primary-btn" onclick="saveAndDownloadNotice()">저장 후 다운로드</button>
     </div>
   </div>
 </div>
@@ -662,7 +661,6 @@ function saveNoticeEditor() {
     .filter(function(v) { return !!v; });
 
   renderNotice();
-  closeNoticeEditor();
 }
 
 function downloadNoticeJson() {
@@ -676,6 +674,12 @@ function downloadNoticeJson() {
   a.download = 'notice.json';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function saveAndDownloadNotice() {
+  saveNoticeEditor();
+  downloadNoticeJson();
+  closeNoticeEditor();
 }
 
 loadNoticeJson();
