@@ -174,9 +174,6 @@
     />
     <button type="button" class="date-picker-btn" id="openDatePicker">📅</button>
   </div>
-
-  <div class="hint">예: 2026-02-01, 2026.2.1, 2026/2/1, 20260201</div>
-</div>
     <button class="btn" id="searchBtn">조회하기</button>
   </div>
 </div>
@@ -477,29 +474,30 @@
           <div class="sub">${metro} · ${city} · ${dong} · 설정일 ${settingDateStr}</div>
         </div>
     
-        <div class="result-date-box">
-          <div class="result-date-row">
-            <div class="field-inline">
-              <label for="modalSettingDate">설정일 다시 변경</label>
-              <input
-                class="input"
-                id="modalSettingDate"
-                type="text"
-                value="${settingDateStr}"
-                placeholder="YYYY-MM-DD"
-              />
-            </div>
-            <button class="btn" type="button" id="modalRequeryBtn">다시 조회</button>
-          </div>
-          <div class="hint">날짜를 바꾸고 다시 조회를 누르면 결과가 즉시 갱신됩니다.</div>
-        </div>
-    
         <div class="summary">
           <div class="summary-grid">
             <div class="mini"><span class="k">특별시 / 광역시 / 도</span><div class="v">${metro}</div></div>
             <div class="mini"><span class="k">시 / 군 / 구</span><div class="v">${city}</div></div>
             <div class="mini"><span class="k">동 / 리 / 읍 / 면</span><div class="v">${dong}</div></div>
-            <div class="mini"><span class="k">근저당권 설정일</span><div class="v">${settingDateStr}</div></div>
+            <div class="mini">
+                <span class="k">근저당권 설정일</span>
+                <input
+                  class="input"
+                  id="modalSettingDate"
+                  type="text"
+                  value="${settingDateStr}"
+                  placeholder="YYYY-MM-DD"
+                  style="height:44px;font-size:15px;"
+                />
+                <button
+                  class="btn"
+                  type="button"
+                  id="modalRequeryBtn"
+                  style="margin-top:8px;height:44px;font-size:14px;padding:0 14px;"
+                >
+                  다시 조회
+                </button>
+              </div>
           </div>
         </div>
     
@@ -527,7 +525,35 @@
           <button class="btn secondary" onclick="document.getElementById('resultModal').classList.remove('open');">닫기</button>
         </div>
       `);
-    
+      const modalSettingDate = document.getElementById("modalSettingDate");
+      const modalRequeryBtn = document.getElementById("modalRequeryBtn");
+      
+      if (modalSettingDate && modalRequeryBtn) {
+        modalSettingDate.addEventListener("blur", () => {
+          const normalized = normalizeDateInput(modalSettingDate.value);
+          if (isValidDateString(normalized)) {
+            modalSettingDate.value = normalized;
+          }
+        });
+      
+        modalSettingDate.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            modalRequeryBtn.click();
+          }
+        });
+      
+        modalRequeryBtn.addEventListener("click", () => {
+          const normalized = normalizeDateInput(modalSettingDate.value);
+      
+          if (!isValidDateString(normalized)) {
+            alert("날짜 형식은 YYYY-MM-DD 입니다.");
+            return;
+          }
+      
+          syncDateInputs(normalized);
+          renderResult(normalized);
+        });
+      }
       const modalSettingDate = document.getElementById("modalSettingDate");
       const modalRequeryBtn = document.getElementById("modalRequeryBtn");
     
