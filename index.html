@@ -192,50 +192,56 @@ body {
 .admin-box {
   margin-top:0;
   margin-bottom:14px;
-  padding-top:0;
-  border-top:0;
+  padding:14px 12px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#f8fbff;
   border-bottom:1px solid #e5e7eb;
-  padding-bottom:14px;
   position:sticky;
   top:0;
-  background:#fff;
   z-index:5;
 }
+
 .admin-status {
   font-size:12px;
-  color:#64748b;
+  color:#94a3b8;
   margin:0 0 10px;
 }
+
 .admin-actions {
   display:flex;
   gap:8px;
   flex-wrap:wrap;
 }
+
 .admin-btn {
-  border:1px solid #cbd5e1;
-  background:#fff;
-  color:#334155;
+  border:1px solid #dbeafe;
+  background:#ffffff;
+  color:#475569;
   padding:8px 10px;
   border-radius:10px;
   font-size:12px;
   font-weight:700;
   cursor:pointer;
+  transition:all .15s ease;
 }
+
 .admin-btn:hover {
-  background:#eff6ff;
+  background:#f8fbff;
   color:#1d4ed8;
   border-color:#bfdbfe;
 }
+
 .admin-btn.primary {
-  background:#1d4ed8;
-  color:#fff;
-  border-color:#1d4ed8;
-}
-.admin-btn.primary:hover {
-  background:#1e40af;
-  color:#fff;
+  background:#dbeafe;
+  color:#1e3a8a;
+  border-color:#bfdbfe;
 }
 
+.admin-btn.primary:hover {
+  background:#bfdbfe;
+  color:#1e3a8a;
+}
 .main {
   padding:34px 36px 48px;
 }
