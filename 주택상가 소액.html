@@ -78,33 +78,46 @@
     @media (max-width:640px){.form-grid,.summary-grid{grid-template-columns:1fr} .modal-head h2{font-size:24px} .metric .v{font-size:22px}}
     
     .form-grid .field:last-child{
-        justify-self:start;
-      }
-    .field{
-        display:flex;
-        flex-direction:column;
-      }
-      
-      .date-row{
-        display:flex;
-        gap:8px;
-        align-items:center;
-      }
-      
-      #settingDateText{
-        width:160px;
-        flex-shrink:0;
-      }
-      
-      .date-picker-btn{
-        width:54px;
-        height:54px;
-        flex-shrink:0;
-      }
-      
-      #searchBtn{
-        flex-shrink:0;
-      }    
+  justify-self:start;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+}
+
+.date-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  position:relative;
+}
+
+#settingDateText{
+  width:160px;
+  flex-shrink:0;
+}
+
+#settingDatePicker{
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
+
+.date-picker-btn{
+  width:54px;
+  height:54px;
+  flex-shrink:0;
+}
+
+#searchBtn{
+  width:74px;
+  min-width:74px;
+  flex-shrink:0;
+  padding:0;
+}
     
     .result-date-box{
       margin:14px 0 18px;
