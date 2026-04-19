@@ -1710,10 +1710,11 @@ function createEmptyProject(name) {
     id: "project_" + Date.now(),
     name,
     columns: [],
-    rows: fixedMembers.map(member => ({
-      name: member,
-      values: {}
-    }))
+   rows: fixedMembers.map(member => ({
+  name: member,
+  active: true,
+  values: {}
+}))
   };
 }
 
@@ -1826,18 +1827,25 @@ function renderAllocationUI() {
 
   const headers = project.columns.map(col => `<th>${escapeHtml(col)}</th>`).join("");
   const rowsHtml = project.rows.map((row, rowIndex) => {
-    const cells = project.columns.map(col => {
-      const value = row.values?.[col] ?? "";
-      return `<td><input type="text" value="${escapeHtml(value)}" ${isAdmin(currentUser) ? "" : "readonly"} oninput="updateAllocationCell('${project.id}', ${rowIndex}, '${escapeHtml(col)}', this.value)"></td>`;
-    }).join("");
-
-    return `
-      <tr>
-        <td>${escapeHtml(row.name)}</td>
-        ${cells}
-      </tr>
-    `;
+  const cells = project.columns.map(col => {
+    const value = row.values?.[col] ?? "";
+    return `<td><input type="text" value="${escapeHtml(value)}" ${isAdmin(currentUser) ? "" : "readonly"} oninput="updateAllocationCell('${project.id}', ${rowIndex}, '${escapeHtml(col)}', this.value)"></td>`;
   }).join("");
+
+  return `
+    <tr style="${row.active ? '' : 'opacity:0.3'}">
+      <td style="display:flex; align-items:center; gap:6px;">
+        ${escapeHtml(row.name)}
+        <button 
+          style="font-size:11px; padding:4px 6px; border-radius:6px; border:1px solid #cbd5e1; cursor:pointer;"
+          onclick="toggleMemberActive('${project.id}', ${rowIndex})">
+          ${row.active ? '제외' : '참여'}
+        </button>
+      </td>
+      ${cells}
+    </tr>
+  `;
+}).join("");
 
   body.innerHTML = `
     <div class="work-project-title">${escapeHtml(project.name)}</div>
@@ -1883,14 +1891,24 @@ onSnapshot(settingsRef, snap => {
   renderMenus();
   renderNotice();
   renderAllContents();
-
+   
   const activeTitle = document.querySelector(".nav-item.active")?.textContent?.trim();
   if (!activeTitle) {
     showSheet(0, "청현 공지사항");
   }
 });
+ 
+  window.toggleMemberActive = function(projectId, rowIndex) {
+  const project = allocationData.projects.find(p => p.id === projectId);
+  if (!project) return;
 
-onSnapshot(allocationRef, snap => {
+  const row = project.rows[rowIndex];
+  row.active = !row.active;
+
+  renderAllocationUI();
+};
+
+  onSnapshot(allocationRef, snap => {
   const data = snap.data() || {};
   allocationData = {
     members: Array.isArray(data.members) && data.members.length ? data.members : [...fixedMembers],
