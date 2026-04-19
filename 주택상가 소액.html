@@ -71,6 +71,65 @@
     .error-box{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;border-radius:16px;padding:16px;margin-top:12px}
     @media (max-width:1000px){.form-grid{grid-template-columns:1fr 1fr} .cards{grid-template-columns:1fr} .summary-grid{grid-template-columns:1fr 1fr}}
     @media (max-width:640px){.form-grid,.summary-grid{grid-template-columns:1fr} .modal-head h2{font-size:24px} .metric .v{font-size:22px}}
+     .date-input-wrap{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    
+    #settingDateText{
+      flex:1;
+    }
+    
+    #settingDatePicker{
+      position:absolute;
+      right:56px;
+      width:1px;
+      height:1px;
+      opacity:0;
+      pointer-events:none;
+    }
+    
+    .date-picker-btn{
+      width:54px;
+      height:54px;
+      border:none;
+      border-radius:16px;
+      cursor:pointer;
+      font-size:20px;
+      background:#fff;
+      color:#0f172a;
+      box-shadow:0 4px 14px rgba(15,23,42,.12);
+      flex:0 0 54px;
+    }
+    
+    .result-date-box{
+      margin:14px 0 18px;
+      padding:16px;
+      border:1px solid #e2e8f0;
+      border-radius:18px;
+      background:#f8fafc;
+    }
+    
+    .result-date-row{
+      display:flex;
+      gap:10px;
+      align-items:end;
+      flex-wrap:wrap;
+    }
+    
+    .result-date-row .field-inline{
+      flex:1 1 220px;
+    }
+    
+    .result-date-row label{
+      display:block;
+      margin-bottom:8px;
+      color:#475569;
+      font-size:14px;
+      font-weight:600;
+    } 
   </style>
 </head>
   <div class="wrap">
@@ -93,10 +152,31 @@
       <label for="dongSelect">동 / 리 / 읍 / 면</label>
       <select class="input" id="dongSelect"></select>
     </div>
-    <div class="field">
-      <label for="settingDate">근저당권 설정일</label>
-      <input class="input" id="settingDate" type="date" value="2023-02-21" />
-    </div>
+   <div class="field">
+  <label for="settingDateText">근저당권 설정일</label>
+
+  <div class="date-input-wrap">
+    <input
+      class="input"
+      id="settingDateText"
+      type="text"
+      inputmode="numeric"
+      placeholder="최초 설정일 입력칸에 날짜를 입력하세요"
+      value="2023-02-21"
+      autocomplete="off"
+    />
+    <input
+      id="settingDatePicker"
+      type="date"
+      value="2023-02-21"
+      tabindex="-1"
+      aria-hidden="true"
+    />
+    <button type="button" class="date-picker-btn" id="openDatePicker">📅</button>
+  </div>
+
+  <div class="hint">예: 2026-02-01, 2026.2.1, 2026/2/1, 20260201</div>
+</div>
     <button class="btn" id="searchBtn">조회하기</button>
   </div>
 </div>
@@ -127,7 +207,62 @@
     const metroSelect = document.getElementById("metroSelect");
     const citySelect = document.getElementById("citySelect");
     const dongSelect = document.getElementById("dongSelect");
-
+    
+    const settingDateText = document.getElementById("settingDateText");
+    const settingDatePicker = document.getElementById("settingDatePicker");
+    const openDatePickerBtn = document.getElementById("openDatePicker");
+    
+    function formatDateValue(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+    
+    function normalizeDateInput(raw) {
+      if (!raw) return "";
+    
+      let v = String(raw).trim();
+      v = v.replace(/\./g, "-").replace(/\//g, "-").replace(/\s+/g, "");
+    
+      if (/^\d{8}$/.test(v)) {
+        return `${v.slice(0,4)}-${v.slice(4,6)}-${v.slice(6,8)}`;
+      }
+    
+      if (/^\d{7}$/.test(v)) {
+        return `${v.slice(0,4)}-0${v.slice(4,5)}-${v.slice(5,7)}`;
+      }
+    
+      const m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) {
+        const yyyy = m[1];
+        const mm = String(Number(m[2])).padStart(2, "0");
+        const dd = String(Number(m[3])).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+    
+      return v;
+    }
+    
+    function isValidDateString(dateStr) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+      const d = new Date(dateStr + "T00:00:00");
+      return !Number.isNaN(d.getTime()) && formatDateValue(d) === dateStr;
+    }
+    
+    function syncDateInputs(dateStr) {
+      settingDateText.value = dateStr;
+      settingDatePicker.value = dateStr;
+    }
+    
+    function normalizeMainDateInput() {
+      const normalized = normalizeDateInput(settingDateText.value);
+      if (isValidDateString(normalized)) {
+        syncDateInputs(normalized);
+        return normalized;
+      }
+      return "";
+    }
     function openModal(html){ modalContent.innerHTML = html; modal.classList.add("open"); }
     function closeModal(){ modal.classList.remove("open"); }
     document.getElementById("closeModal").addEventListener("click", closeModal);
@@ -309,30 +444,57 @@
         </div>`;
     }
 
-    function renderResult() {
+    function renderResult(dateOverride) {
       const metro = metroSelect.value;
       const city = citySelect.value;
       const dong = dongSelect.value;
-      const settingDateStr = document.getElementById("settingDate").value;
-      if(!settingDateStr) {
-        openModal(`<div class="modal-head"><div class="eyebrow" style="background:#fef2f2;color:#b91c1c;">오류</div><h2>조회에 실패했습니다</h2><div class="error-box">근저당권 설정일을 입력해주세요.</div></div>`);
+    
+      const settingDateStr = dateOverride || normalizeMainDateInput();
+    
+      if (!settingDateStr || !isValidDateString(settingDateStr)) {
+        openModal(`
+          <div class="modal-head">
+            <div class="eyebrow" style="background:#fef2f2;color:#b91c1c;">오류</div>
+            <h2>조회에 실패했습니다</h2>
+            <div class="error-box">최초 설정일 입력칸에 날짜를 입력하세요. 형식은 YYYY-MM-DD 입니다.</div>
+          </div>
+        `);
         return;
       }
+    
+      syncDateInputs(settingDateStr);
+    
       const settingDate = toDate(settingDateStr);
       const currentHousing = findCurrentHousing(metro, city, dong, settingDate);
       const currentCommercial = findCurrentCommercial(metro, city, dong, settingDate);
       const housingHistory = getHousingHistory(metro, city, dong);
       const commercialHistory = getCommercialHistory(metro, city, dong);
-
+    
       openModal(`
         <div class="modal-head">
           <div class="eyebrow">조회 완료</div>
           <h2>소액보증금 조회 결과</h2>
           <div class="sub">${metro} · ${city} · ${dong} · 설정일 ${settingDateStr}</div>
         </div>
-
+    
+        <div class="result-date-box">
+          <div class="result-date-row">
+            <div class="field-inline">
+              <label for="modalSettingDate">설정일 다시 변경</label>
+              <input
+                class="input"
+                id="modalSettingDate"
+                type="text"
+                value="${settingDateStr}"
+                placeholder="YYYY-MM-DD"
+              />
+            </div>
+            <button class="btn" type="button" id="modalRequeryBtn">다시 조회</button>
+          </div>
+          <div class="hint">날짜를 바꾸고 다시 조회를 누르면 결과가 즉시 갱신됩니다.</div>
+        </div>
+    
         <div class="summary">
-          
           <div class="summary-grid">
             <div class="mini"><span class="k">특별시 / 광역시 / 도</span><div class="v">${metro}</div></div>
             <div class="mini"><span class="k">시 / 군 / 구</span><div class="v">${city}</div></div>
@@ -340,12 +502,12 @@
             <div class="mini"><span class="k">근저당권 설정일</span><div class="v">${settingDateStr}</div></div>
           </div>
         </div>
-
+    
         <div class="cards">
           ${buildHousingCard(currentHousing, settingDateStr)}
           ${buildCommercialCard(currentCommercial, settingDateStr)}
         </div>
-
+    
         <div class="table-grid">
           <div>
             <div class="section-title">주택용 소액 금액표</div>
@@ -356,21 +518,95 @@
             ${buildCommercialTable(commercialHistory)}
           </div>
         </div>
-
+    
         <div class="foot">
           주택 표는 선택 주소와 관련된 전체 기간을, 주택 표와 상가 표 모두 선택한 지역과 가장 관련 있는 행만 기간별로 1건씩 표시합니다.
         </div>
-
+    
         <div class="actions">
           <button class="btn secondary" onclick="document.getElementById('resultModal').classList.remove('open');">닫기</button>
         </div>
       `);
+    
+      const modalSettingDate = document.getElementById("modalSettingDate");
+      const modalRequeryBtn = document.getElementById("modalRequeryBtn");
+    
+      modalSettingDate.addEventListener("blur", () => {
+        const normalized = normalizeDateInput(modalSettingDate.value);
+        if (isValidDateString(normalized)) {
+          modalSettingDate.value = normalized;
+        }
+      });
+    
+      modalSettingDate.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const normalized = normalizeDateInput(modalSettingDate.value);
+          if (!isValidDateString(normalized)) {
+            alert("날짜 형식은 YYYY-MM-DD 입니다.");
+            return;
+          }
+          syncDateInputs(normalized);
+          renderResult(normalized);
+        }
+      });
+    
+      modalRequeryBtn.addEventListener("click", () => {
+        const normalized = normalizeDateInput(modalSettingDate.value);
+        if (!isValidDateString(normalized)) {
+          alert("날짜 형식은 YYYY-MM-DD 입니다.");
+          return;
+        }
+        syncDateInputs(normalized);
+        renderResult(normalized);
+      });
     }
 
     metroSelect.addEventListener("change", populateCity);
     citySelect.addEventListener("change", populateDong);
-    document.getElementById("searchBtn").addEventListener("click", renderResult);
+    
+    openDatePickerBtn.addEventListener("click", () => {
+      if (typeof settingDatePicker.showPicker === "function") {
+        settingDatePicker.showPicker();
+      } else {
+        settingDatePicker.focus();
+        settingDatePicker.click();
+      }
+    });
+    
+    settingDatePicker.addEventListener("change", () => {
+      if (settingDatePicker.value) {
+        syncDateInputs(settingDatePicker.value);
+      }
+    });
+    
+    settingDateText.addEventListener("blur", () => {
+      normalizeMainDateInput();
+    });
+    
+    settingDateText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const ok = normalizeMainDateInput();
+        if (ok) renderResult();
+      }
+    });
+    
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      const normalized = normalizeMainDateInput();
+      if (!normalized) {
+        openModal(`
+          <div class="modal-head">
+            <div class="eyebrow" style="background:#fef2f2;color:#b91c1c;">오류</div>
+            <h2>조회에 실패했습니다</h2>
+            <div class="error-box">최초 설정일 입력칸에 날짜를 입력하세요. 형식은 YYYY-MM-DD 입니다.</div>
+          </div>
+        `);
+        return;
+      }
+      renderResult();
+    });
+    
     populateMetro();
+    syncDateInputs("2023-02-21");
   </script>
 </body>
 </html>
