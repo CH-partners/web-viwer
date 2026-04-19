@@ -209,6 +209,30 @@ body {
   color:#ffffff;
   border-color:#3b82f6;
 }
+  /* 🔥 분배표 / 소액 조회 공통 강조 */
+.nav-item-highlight {
+  background:#f5f3ff;
+  color:#6d28d9;
+  border:1px solid #ddd6fe;
+  border-radius:14px;
+  font-weight:800;
+  padding:13px 14px;
+  box-shadow:0 6px 16px rgba(109,40,217,0.08);
+  margin-bottom:6px;
+}
+
+/* hover */
+.nav-item-highlight:hover {
+  background:#ede9fe;
+  color:#5b21b6;
+}
+
+/* active */
+.nav-item-highlight.active {
+  background:#7c3aed;
+  color:#ffffff;
+  border-color:#7c3aed;
+}
 .admin-box {
   margin-top:0;
   margin-bottom:14px;
@@ -1167,11 +1191,25 @@ function createMenuButton(menu, isChild = false) {
     else btn.classList.add("nav-item-green");
   }
 
-  // 공지사항 강조
+  // 🔥 공지사항
   if (Number(menu.panelIndex) === 0) {
     btn.classList.add("nav-item-notice");
     btn.textContent = "📢 " + (menu.title || "공지사항");
-  } else {
+  }
+
+  // 🔥 Project 분배표
+  else if (Number(menu.panelIndex) === 11) {
+    btn.classList.add("nav-item-highlight");
+    btn.textContent = "📊 " + (menu.title || "Project 분배표");
+  }
+
+  // 🔥 소액 조회
+  else if ((menu.title || "").includes("소액")) {
+    btn.classList.add("nav-item-highlight");
+    btn.textContent = "🔍 " + (menu.title || "소액 조회");
+  }
+
+  else {
     btn.textContent = menu.title || "메뉴";
   }
 
