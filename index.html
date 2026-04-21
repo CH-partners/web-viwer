@@ -1960,7 +1960,7 @@ window.openContentEditor = function(panelKey) {
   document.getElementById("contentMajorTitle").value = config.majorTitle || "";
   contentEditor.root.innerHTML = config.bodyHtml || config.html || "";
 
-  currentContentTableData = cloneTableData(config.tableData);
+  currentContentTableData = deserializeTableData(config.tableData);
   renderContentTableEditor();
 
   openModal("contentModal");
@@ -1976,8 +1976,8 @@ function syncContentFromEditor() {
     getPanelTitleByKey(currentContentPanelKey);
 
   const bodyHtml = contentEditor.root.innerHTML;
-  const tableData = cloneTableData(currentContentTableData);
-  const tableHtml = buildContentTableHtml(tableData);
+  const tableData = serializeTableData(currentContentTableData);
+  const tableHtml = buildContentTableHtml(currentContentTableData);
 
   config.bodyHtml = bodyHtml;
   config.tableData = tableData;
@@ -2261,7 +2261,48 @@ function normalizeContentTableRows(rows) {
     return safeRow;
   });
 }
+function serializeTableData(tableData) {
+  if (!tableData?.enabled) {
+    return {
+      enabled: false,
+      rows: []
+    };
+  }
 
+  const rows = normalizeContentTableRows(tableData.rows || []);
+
+  return {
+    enabled: true,
+    rows: rows.map(row => {
+      const obj = {};
+      row.forEach((cell, idx) => {
+        obj[`c${idx}`] = cell ?? "";
+      });
+      return obj;
+    })
+  };
+}
+
+function deserializeTableData(tableData) {
+  if (!tableData?.enabled || !Array.isArray(tableData.rows) || !tableData.rows.length) {
+    return {
+      enabled: false,
+      rows: []
+    };
+  }
+
+  const rows = tableData.rows.map(rowObj => {
+    const keys = Object.keys(rowObj).sort((a, b) => {
+      return Number(a.replace("c", "")) - Number(b.replace("c", ""));
+    });
+    return keys.map(key => rowObj[key] ?? "");
+  });
+
+  return {
+    enabled: true,
+    rows
+  };
+}
 function renderContentTableEditor() {
   const table = document.getElementById("contentTableEditor");
   if (!table) return;
